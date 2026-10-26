@@ -1,0 +1,57 @@
+# Python caches and Jupyter checkpoints
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+.secrets/
+secrets.*
+credentials*.json
+*.pem
+*.key
+
+# Local datasets and generated files
+data/
+datasets/
+local_data/
+outputs/
+results/
+artifacts/
+checkpoints/
+
+# Videos and archives (keep large files in Drive)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Model weights
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.hdf5
+*.keras
+*.onnx
+*.safetensors
+*.weights
+*.bin
+
+# Operating-system temporary files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*~
