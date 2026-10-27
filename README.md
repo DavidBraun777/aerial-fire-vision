@@ -1,16 +1,22 @@
 # Wildfire Detection in Drone Imagery with Little or No Labeled Data
 
-`aerial-fire-vision` is the **Visionaries' SEIS 766 Vision AI group project** at the University of St. Thomas (Fall 2026).
+**University of St. Thomas · SEIS 766 — Vision AI · Fall 2026 · The Visionaries**
 
-**Research question:** How well can computer vision methods recognize visible fire in aerial imagery when few or no *task-specific* training labels are available?
+## Project overview
 
-**Scope:** This is an offline study using the existing [FLAME dataset](https://doi.org/10.21227/qad6-r683). **Our team did not fly drones or collect new imagery.** The original FLAME researchers recorded RGB and thermal footage with drones during a prescribed pile burn in an Arizona pine forest. Results on this dataset alone do not establish reliable detection of uncontrolled wildfires or real-time deployment.
+`aerial-fire-vision` is our group's research project investigating **visible-fire recognition in aerial imagery under limited task-specific labeling**. Our central question is:
 
-The proposed core comparison is a supervised CNN, a VAE trained on known `No_Fire` images, and CLIP with zero-shot/few-shot approaches. These are research plans, **not results**. The methods and scope may change as the team examines the data.
+> **How do supervised, anomaly-based, and vision–language approaches compare when the number of labeled training images is restricted, particularly across different image-acquisition conditions?**
 
-## Repository and collaboration
+The proposed comparison uses a supervised convolutional neural network (CNN) as a reference, a variational autoencoder (VAE) for normal-data anomaly detection, and CLIP for zero-shot and few-shot recognition. Pixel-level segmentation, video analysis, and other methods remain possible extensions, not required deliverables.
 
-This shared `master` branch is intentionally small:
+**Study scope and provenance.** Our team did **not** conduct drone flights or collect original imagery. We are working with the existing [FLAME dataset](https://doi.org/10.21227/qad6-r683), whose original researchers collected RGB and thermal footage using UAV-mounted cameras during a prescribed pile burn in an Arizona pine forest. Here, *drone imagery* describes the **source of the dataset**, not our team's activities. FLAME can support a controlled research comparison, but results on a single prescribed-burn setting should not be represented as validation of real-time wildfire surveillance or deployment.
+
+**Implementation status.** The shared repository currently contains documentation and a minimal Google Colab starter notebook. It does not yet contain a trained fire detector, validated end-to-end dataset pipeline, or team benchmark results. Proposed architectures and experiments below are plans, not completed work.
+
+## Repository organization and collaboration
+
+The shared repository is intentionally small while the team agrees on methods and responsibilities.
 
 ```text
 aerial-fire-vision/
@@ -20,116 +26,209 @@ aerial-fire-vision/
     └── starter.ipynb
 ```
 
-- **GitHub:** source of truth for notebooks, code, and documentation.
-- **Google Drive:** planned shared storage for original datasets, models, and larger results.
-- **Google Colab:** primary environment for running the Jupyter notebooks.
+| Component | Purpose |
+|---|---|
+| **GitHub** | Canonical notebooks, source code, documentation, and small reproducible configurations |
+| **Google Drive** | Planned shared storage for dataset archives, model checkpoints, and larger outputs |
+| **Google Colab** | Primary notebook execution environment; GPU use when available |
 
-The [starter notebook](notebooks/starter.ipynb) only mounts Google Drive, configures a folder path, and checks that the folder exists. **It does not load or validate FLAME, train models, or report benchmark results.**
+`README.md` is the project reference, and `.gitignore` protects against accidentally adding common local data, environment files, model weights, and generated artifacts. [`notebooks/starter.ipynb`](notebooks/starter.ipynb) currently **only** mounts Drive, configures a path, and checks for a directory. That check does not verify dataset completeness.
 
 ### Getting started
 
-1. Open [`notebooks/starter.ipynb`](notebooks/starter.ipynb) in [Google Colab](https://colab.research.google.com/) using **File → Open notebook → GitHub**, or clone this repository locally.
-2. Obtain access to the team's FLAME data folder. The shared Google Drive location and teammate access **have not yet been confirmed**.
-3. If the folder is shared with you, add a shortcut named `aerial-fire-vision` to **My Drive**, or adapt the notebook's `DATA_DIR` to match your own Drive layout.
-4. Run the notebook setup cells. The configured path is `/content/drive/MyDrive/aerial-fire-vision` by default. A successful path check only confirms that the folder exists, not that all data is present.
-5. Make changes on your own Git branch and propose them for review before merging into `master`. Avoid editing the same notebook simultaneously; clear large cell outputs before committing.
+1. Clone the repository, or open [Google Colab](https://colab.research.google.com/) and select **File → Open notebook → GitHub**. Use `https://github.com/DavidBraun777/aerial-fire-vision` and open [`notebooks/starter.ipynb`](notebooks/starter.ipynb).
+2. Obtain access to the team's data folder. **Shared Google Drive access is not yet confirmed.** Once it is shared, add a shortcut named `aerial-fire-vision` to **My Drive**, or use the path appropriate for your account.
+3. Mount your own Drive in Colab and inspect the editable setting: `DATA_DIR = Path("/content/drive/MyDrive/aerial-fire-vision")`. Confirm the required files exist; the starter's folder check alone is insufficient.
+4. Work in a separate Git branch, keep notebooks reviewable, and propose changes through a pull request. Avoid simultaneous editing of one notebook and remove bulky cell outputs before committing.
 
-Do not commit datasets, videos, model weights, credentials, or generated artifacts to Git. Changes made to a Drive copy of a notebook do not automatically update the GitHub version.
+GitHub is the source of truth for notebooks and code; saving a copy to Drive does **not** update GitHub. Do not commit raw data, videos, model weights, secrets, or credentials. `.gitignore` cannot protect information embedded inside notebook cells or outputs.
 
-## Dataset: FLAME
+See [Google Colab's FAQ](https://research.google.com/colaboratory/faq.html) for runtime and Drive behavior.
 
-FLAME (*Fire Luminosity Airborne-based Machine learning Evaluation*) provides extracted RGB frames and original RGB/thermal recordings. The core archives are `Training.zip`, `Test.zip`, `Images.zip`, and `Masks.zip`. The original study reports:
+## Dataset and provenance
 
-| Subset | Records | Source / details |
-|---|---:|---|
-| Classification train/validation | 39,375 RGB frames (25,018 `Fire`; 14,357 `No_Fire`) | Zenmuse X4S footage; 254 × 254 |
-| Classification test | 8,617 RGB frames (5,137 `Fire`; 3,480 `No_Fire`) | Phantom footage; 254 × 254 |
-| Segmentation | 2,003 RGB frames and 2,003 matching mask files | Frames from the Phantom fire footage; resolution discrepancy noted below |
+The primary source is **FLAME — Fire Luminosity Airborne-based Machine learning Evaluation**, available through [IEEE DataPort](https://ieee-dataport.org/open-access/flame-dataset-aerial-imagery-pile-burn-detection-using-drones-uavs). It includes extracted RGB frames, image-level Fire/No_Fire labels, pixel-level segmentation masks, and original RGB and thermal recordings.
 
-**Acquisition status:** The full set of six source recordings and four image archives has been downloaded locally for preliminary inspection **outside this repository**. The `Test.zip` archive has been audited and its reported image counts and dimensions verified; the masks have also been inspected. **A complete audit of every source file, RGB–mask alignment, and shared Google Drive access is still pending.** No data files are published here.
+### Published dataset partitions
 
-**Segmentation dimensions:** The downloaded `Masks.zip` contains 2,003 masks at **3840 × 2160**, with observed binary pixel values `0` (background) and `1` (fire). Table 2 in the 2021 paper instead lists **3480 × 2160** for segmentation. The corresponding RGB image dimensions and alignment still need verification. Mask values should not be divided by 255; resize label masks with nearest-neighbor interpolation.
+| Dataset subset | Number of records | Known source | Resolution |
+|---|---:|---|---|
+| Classification — training/validation | **39,375** images | Zenmuse X4S | 254 × 254 |
+| Classification — test | **8,617** images | Phantom | 254 × 254 |
+| Segmentation | **2,003** RGB images and **2,003** masks | Selected from Phantom fire footage | Masks: 3840 × 2160 observed; RGB pairing/dimensions pending verification |
+| Original recordings | **3 RGB** and **3 thermal-palette** videos | Original FLAME capture | Varies by recording |
 
-These are **frames from a small number of recordings, not independent wildfire events**. Nearby frames can be nearly identical. The classification training and test sets also come from different acquisition setups, so test performance may reflect changes in camera, viewpoint, timing, and scene conditions—not camera hardware alone.
+The classification class counts are:
 
-A preliminary test-archive audit also identified **nine completely black `No_Fire` frames**. Keep the official archive unchanged; any decision to exclude these frames should be declared and results reported consistently.
+| Split | `Fire` | `No_Fire` | Total | Fire proportion |
+|---|---:|---:|---:|---:|
+| Training/validation | 25,018 | 14,357 | 39,375 | 63.5% |
+| Test | 5,137 | 3,480 | 8,617 | 59.6% |
 
-### Data use
+These figures describe **video-derived frames, not independent fires or separate field campaigns**.
 
-The original archives should be treated as read-only inputs. Once shared Drive access is established, a possible layout is:
+### Files, access, and current verification
 
-```text
-aerial-fire-vision/
-└── datasets/
-    └── FLAME/
-        └── archives/
-            ├── Training.zip
-            ├── Test.zip
-            ├── Images.zip
-            └── Masks.zip
-```
+The dataset's original ZIP archives are `Training.zip`, `Test.zip`, `Images.zip`, and `Masks.zip`. Six source recordings are also available, including Zenmuse, Phantom, and rendered thermal videos.
 
-This is a **suggested Drive layout**, not a claim that it exists. In Colab, copy archives into the temporary runtime before extracting large numbers of small images, and save only the outputs you need back to Drive. Keep a record of archive checksums and splits used for experiments.
+A team member has downloaded the complete collection locally **outside this GitHub repository**. Preliminary local inspection has verified the counts and 254 × 254 RGB format of the test frames and inspected the 2,003 segmentation masks. **Team-wide Drive sharing, a complete full-dataset audit, and RGB-image-to-mask alignment are still pending.** Nothing in this repository implies that the files can already be accessed by every teammate.
 
-## Proposed experiments
+The downloaded masks are **3840 × 2160**, with `0` representing background and `1` representing fire. The original paper's Table 2 instead lists **3480 × 2160** for segmentation. This discrepancy must be reported rather than silently corrected; confirm the paired RGB dimensions before training or measuring IoU. Do not divide already-binary `0`/`1` masks by 255. Use nearest-neighbor interpolation for label masks.
 
-| Approach | What we want to learn | Supervision |
+Preliminary local quality checks also flagged **nine black `No_Fire` test frames**, and very small fire regions within many segmentation masks. Preserve the original data and document any quality exclusions or sensitivity analyses rather than quietly modifying the benchmark.
+
+### Dataset limitations that matter experimentally
+
+- **Frame correlation:** thousands of nearby frames can depict almost identical scenes. A random train/validation split risks inflating results through near-duplicate overlap.
+- **Acquisition shift:** classification training/validation footage and testing footage come from different camera setups. Changes in viewpoint, timing, lighting, and scene content may be confounded with camera differences.
+- **Cross-task overlap:** the segmentation examples were selected from Phantom fire footage associated with the classification test partition. Training segmentation on those images must not be presented as independent unseen-camera classification evaluation.
+- **Visible flame versus smoke:** an image labeled `No_Fire` can still contain haze or smoke; detecting active visible flames, detecting smoke, and predicting wildfire risk are different tasks.
+- **Temporal metadata:** class-specific extracted frame numbers do not by themselves reconstruct one globally ordered video sequence. Temporal experiments require verified source order and timestamps.
+- **Dataset scope:** a prescribed pile burn is not a broad sample of uncontrolled wildfire events, environments, or operating conditions.
+
+Keep the original datasets unchanged and record archive checksums, file manifests, label mappings, and split assignments before training. Class labels should be mapped consistently across every method; we propose reporting `Fire = 1` and `No_Fire = 0`, but the mapping must be checked against the source code and made explicit.
+
+## Research questions and proposed methods
+
+The project's emphasis is **label efficiency and generalization**, not training the largest number of architectures.
+
+1. **Supervised reference:** How well does a CNN trained on labeled FLAME images classify Fire versus No_Fire?
+2. **Anomaly detection:** Can a VAE trained on selected `No_Fire` images identify fire via reconstruction error? Does the error map correspond to actual flame locations?
+3. **Zero-shot and few-shot recognition:** How effectively can CLIP identify fire without FLAME-specific training, and how does its performance change with a small number of labeled examples?
+4. **Cross-acquisition performance:** Which methods best retain precision and fire recall when evaluated on the held-out Phantom recordings?
+
+### Core approaches
+
+| Approach | Proposed setup | What must be interpreted carefully |
 |---|---|---|
-| **CNN / ResNet** | A reference Fire/No_Fire classifier and its performance with limited labels | Full or sampled training labels |
-| **VAE anomaly detection** | Whether reconstruction error from `No_Fire` training images helps detect fire | Known normal-class selection; no fire examples required for training |
-| **CLIP** | How zero-shot image–text recognition compares with few-shot adaptation | No FLAME-specific labels for zero-shot; declared budgets for few-shot |
+| **Supervised CNN / ResNet** | Train a reference classifier; optionally compare full-data and reduced-label training | Full-data performance is not directly comparable with a zero-label method without stating supervision budgets |
+| **VAE** | Train on identified `No_Fire` frames; score reconstruction error | Selecting normal examples still requires class knowledge; reconstruction error is not automatically calibrated or spatially specific to fire |
+| **CLIP** | Predefined text prompts for zero-shot classification; few-shot adaptation or linear probing as a separate experiment | Pretraining is substantial prior supervision; prompt selection and decision thresholds must not use held-out test labels |
 
-For the label-efficiency comparison, we plan to evaluate the same held-out examples and use matched, reproducible label budgets (for example 10, 25, 50, and 100 per class). CLIP is pretrained; *zero-shot* means no FLAME-specific training labels, not a model trained with no prior supervision.
+For an initial label-efficiency curve, candidate budgets are **0, 10, 25, 50, and 100 task-specific labeled images per class**, where the chosen method supports them. Exact budgets, sampling rules, and seeds must be agreed upon. Compare few-shot methods on matching sampled training examples and identical held-out evaluation examples.
 
-Possible extensions—not commitments—include fire-pixel segmentation, temporally consistent video predictions, DINOv2 or BLIP, and image-domain adaptation. We will decide on extensions after establishing working baselines.
+### Optional extensions, not current commitments
 
-### Experimental workflow (proposed)
+| Method | Research opportunity | Additional requirement |
+|---|---|---|
+| **DINOv2 or other self-supervised embeddings** | Few-shot classifiers built from frozen visual features | Consistent label budgets and controlled feature extraction |
+| **BLIP / BLIP-2** | Caption-based or question-answering recognition of visible flames | Explicit rules for converting language responses to Fire/No_Fire/Unknown |
+| **U-Net / semantic segmentation** | Localizing flame pixels instead of only classifying whole frames | Verified image–mask pairs and a distinct segmentation split/evaluation |
+| **Temporal analysis** | Testing whether adjacent-frame predictions reduce isolated false alarms | Reliable frame order; report missed events and added detection delay |
+| **CycleGAN / image-domain translation** | Testing domain adaptation or synthetic augmentation | Label-preservation checks and clear separation of source/target/test access |
+
+The team may pursue a small number of these after establishing credible baselines. GAN-generated images are **not** presumed to be additional independent ground-truth fire examples.
+
+## Notebook design and possible architectures
+
+Start with one straightforward Colab notebook for dataset access and inspection. As methods become independent, model-specific notebooks can be introduced while sharing the same manifest, split protocol, label mapping, and evaluation conventions. Avoid a single notebook that must execute every model.
+
+A model experiment should be understandable in this order:
+
+1. **Environment:** imports, dependencies, random seed, paths, and compute device.
+2. **Data access:** mount Drive and stage needed archives in the Colab runtime.
+3. **Audit:** verify labels, dimensions, samples, masks if applicable, and dataset identity.
+4. **Splits:** establish train/validation boundaries and protect the held-out test set.
+5. **Preparation:** consistent preprocessing and augmentation limited to appropriate partitions.
+6. **Method:** train or run the selected model with its declared supervision budget.
+7. **Evaluation:** validation-based threshold selection followed by a frozen final test.
+8. **Reporting:** save configurations, prediction scores, class metrics, failure cases, and compute measurements.
+
+Use explicit `DATA_DIR`, `OUTPUT_DIR`, and seed settings. Colab's runtime storage is temporary; read-heavy experiments should stage archives under `/content` and save persistent outputs to Drive.
+
+### Conceptual experiment architecture
+
+The branches below are **alternatives**, not one integrated model or a claim that these pipelines already run.
 
 ```mermaid
 flowchart TD
-    A["Existing FLAME data in Drive"] --> B["Colab: load and audit data"]
-    B --> C["Document splits and evaluation protocol"]
-    C --> D{"Choose task"}
-    D --> E["Image classification: CNN, VAE or CLIP"]
-    D --> F["Separate segmentation experiment, if selected"]
-    D --> G["Ordered-video analysis, if selected"]
-    E --> H["Image-level precision, recall, F1, AUC"]
-    F --> I["Pixel-level Fire IoU, Dice, recall"]
-    G --> J["Sequence metrics and detection delay, if measurable"]
-    H --> K["Save results and run settings"]
+    A["IEEE FLAME: original archives and recordings"] --> B["Google Drive and Colab setup"]
+    B --> C["Integrity audit, provenance, sample manifest"]
+    C --> D{"Research task"}
+
+    D -->|Image classification| E["Zenmuse train/validation; hold out Phantom test"]
+    E --> F{"Choose approach"}
+    F --> G["ResNet: full or few-shot labels"]
+    F --> H["CLIP: zero-shot or few-shot"]
+    F --> I["VAE: selected normal examples"]
+    F --> J["Optional visual embeddings / BLIP"]
+    G --> K["Fire / No_Fire scores"]
+    H --> K
     I --> K
     J --> K
+    K --> L["Classification metrics and failure analysis"]
+
+    D -->|Pixel localization| M["Separate mask-pair audit and split"]
+    M --> N["Segmentation model"]
+    N --> O["Fire-class IoU, Dice, pixel recall"]
+
+    D -->|Video analysis: optional| P["Verified ordered frames"]
+    P --> Q["Frame predictions and temporal aggregation"]
+    Q --> R["Sequence consistency and latency"]
+
+    L --> S["Recorded methods, predictions, metrics"]
+    O --> S
+    R --> S
+    S --> T["Drive outputs; reviewed summaries in GitHub"]
 ```
 
-This diagram describes possible paths, **not an implemented pipeline**.
+A domain-translation experiment (such as CycleGAN) would require its own training-data boundaries and downstream evaluation. Using target-camera test imagery during adaptation changes the experimental claim and must be identified as a **separate transductive setting**, not an untouched-domain test.
 
-## Evaluation rules
+## Evaluation and reproducibility
 
-- **Protect the test partition.** Use training/validation data to select models, prompts, preprocessing, hyperparameters, and decision thresholds. Use the original 8,617-frame test set only for final evaluation under a frozen protocol; data-quality audits are documented separately.
-- **Address correlated video frames.** Prefer source-video or temporally separated validation when source metadata permits. Do not infer original chronology solely from separate class-specific filename sequences.
-- **Keep the tasks separate.** The 2,003 segmentation images were drawn from Phantom fire footage that also supplied the classification test set. A segmentation model trained on those frames cannot then be claimed to be an unseen-camera evaluation on that same footage.
-- **Use appropriate metrics.** Report Fire-class precision, recall, F1, and accuracy, plus ROC-AUC and PR-AUC where valid. For segmentation, report pixel-level Fire IoU and Dice. Record inference latency and the compute environment where practical.
-- **Be precise about the claims.** A VAE reconstruction heatmap is not automatically a fire mask; a high frame-level score does not identify fire pixels; and good results on prescribed pile burns do not prove operational wildfire detection.
+**Classification.** Report sample counts, fire-class precision, recall, F1, accuracy, and balanced accuracy. Include confusion matrices, ROC-AUC, and average precision/PR-AUC when valid scores and class counts allow them. Report false positives and **missed fires** explicitly; class accuracy alone is insufficient.
 
-## Project status and next steps
+**Segmentation.** Report fire-class IoU and Dice using verified binary masks, along with pixel precision and recall. Background-heavy pixel accuracy can look excellent even when all fire pixels are missed. VAE error maps or classification confidence visualizations should not be presented as segmentation ground truth.
 
-| Work item | Status |
-|---|---|
-| Shared repository and Colab starter | Available; Drive folder check only |
-| FLAME source files | Downloaded locally outside Git; partial audits completed |
-| Team-wide Google Drive access | Not yet confirmed |
-| Shared data manifest and evaluation split | To be agreed and validated |
-| Models and experimental results on `master` | Not implemented |
+**Experimental fairness.** Freeze label budgets and sampling seeds; separate normal-only selection, zero-shot inference, frozen-encoder probing, and full supervised training. Use validation data to tune prompts, thresholds, or other choices where such tuning is permitted. Never select decisions using the held-out test set.
 
-Next: confirm team access to the archives, validate file integrity and image–mask pairs, agree on label conventions and splits, then run a simple baseline before expanding the model comparison.
+**Generalization.** Treat the published train/test comparison as **cross-acquisition**, not a controlled camera-only experiment. State what is and is not known about source videos, chronology, and near duplicates. The test set should be evaluated under an agreed protocol; preliminary data-integrity inspection does not authorize test-driven model selection.
 
-The course's tentative schedule lists the **project plan (October 27, 2026)**, **presentation (December 8, 2026)**, and **final submission (December 19, 2026)**. Check Canvas for updates.
+**Efficiency.** Record GPU/CPU type, image resolution, batch size, inference latency, and where possible end-to-end processing time. Distinguish model computation from Drive reading, decoding, and temporal aggregation overhead.
 
-## Original resources and references
+For each run, retain at least the Git revision, dataset/archive identity, split definition, label convention, model/checkpoint, prompt set where applicable, seed, configuration, metrics, and per-image scores. The public repo currently contains **no team benchmark results**.
 
-- **Dataset and files:** [FLAME on IEEE DataPort](https://ieee-dataport.org/open-access/flame-dataset-aerial-imagery-pile-burn-detection-using-drones-uavs) · [Dataset DOI: 10.21227/qad6-r683](https://doi.org/10.21227/qad6-r683)
-- **Published paper:** Shamsoshoara et al., [*Aerial imagery pile burn detection using deep learning: The FLAME dataset*](https://doi.org/10.1016/j.comnet.2021.108001), *Computer Networks* (2021) · [arXiv preprint](https://arxiv.org/abs/2012.14036)
-- **Original implementation:** [FLAME classification and segmentation GitHub repository](https://github.com/AlirezaShamsoshoara/Fire-Detection-UAV-Aerial-Image-Classification-Segmentation-UnmannedAerialVehicle) (legacy TensorFlow/Keras code; inspect it critically rather than assuming its results reproduce unchanged)
-- **Initial method references:** [ResNet](https://arxiv.org/abs/1512.03385) · [VAE](https://arxiv.org/abs/1312.6114) · [CLIP](https://arxiv.org/abs/2103.00020)
+## Project plan
 
-Dataset, paper, and upstream code may have different reuse terms. Check the specific source's license before redistributing data or adapting upstream code.
+The phases below reflect the **shared repository and verified project context**, not work implicitly completed by a notebook merely because it exists.
+
+| Phase | Current status | Next deliverable |
+|---|---|---|
+| Data acquisition | Downloaded locally; team access pending | Confirm shared Drive access and archive checksums |
+| Dataset inspection | Partial local verification | Complete manifest, integrity audit, image/mask pairing and leakage checks |
+| Experimental design | Proposed | Agree on class mapping, validation split, label budgets and metric definitions |
+| Baseline models | Not yet in shared repo | Reproducible reference and zero-shot predictions |
+| Comparative evaluation | Planned | Label-efficiency results and cross-acquisition error analysis |
+| Optional extensions | Undecided | Select only methods justified by time, results, and available data |
+| Reporting | Planned | Reproducible figures, limitations, presentation and final report |
+
+**Course milestones (tentative; confirm in Canvas):** project plan **October 27, 2026**; group presentation **December 8, 2026**; final project submission **December 19, 2026**.
+
+### Open decisions
+
+- Who will maintain the team's shared Drive folder, read-only source archives, and writable experiment outputs?
+- Can source-video groups and frame chronology be established reliably enough for leakage-resistant validation or video analysis?
+- Which approaches are core deliverables and which remain exploratory?
+- How will label budgets, seeds, thresholds, predictions, and failures be compared fairly?
+- Is segmentation within the course scope, given the overlap with classification test footage?
+- Who will own notebook changes and review pull requests as the shared repository grows?
+
+## References and upstream resources
+
+**Primary dataset and implementation**
+
+- [FLAME on IEEE DataPort](https://ieee-dataport.org/open-access/flame-dataset-aerial-imagery-pile-burn-detection-using-drones-uavs) — dataset and downloadable archives; [DOI: 10.21227/qad6-r683](https://doi.org/10.21227/qad6-r683).
+- Shamsoshoara et al. (2021), [*Aerial imagery pile burn detection using deep learning: The FLAME dataset*](https://doi.org/10.1016/j.comnet.2021.108001), *Computer Networks* — [arXiv preprint](https://arxiv.org/abs/2012.14036).
+- [Original authors' classification/segmentation code](https://github.com/AlirezaShamsoshoara/Fire-Detection-UAV-Aerial-Image-Classification-Segmentation-UnmannedAerialVehicle) — useful for historical method and data-layout references; its legacy dependencies and reported numbers should not be assumed to reproduce without verification.
+
+**Method references**
+
+- He et al., [*Deep Residual Learning for Image Recognition* (ResNet)](https://arxiv.org/abs/1512.03385).
+- Kingma and Welling, [*Auto-Encoding Variational Bayes* (VAE)](https://arxiv.org/abs/1312.6114).
+- Radford et al., [*Learning Transferable Visual Models From Natural Language Supervision* (CLIP)](https://arxiv.org/abs/2103.00020).
+- Ronneberger et al., [*U-Net: Convolutional Networks for Biomedical Image Segmentation*](https://arxiv.org/abs/1505.04597).
+- Li et al., [BLIP](https://arxiv.org/abs/2201.12086) and [BLIP-2](https://arxiv.org/abs/2301.12597).
+- Oquab et al., [*DINOv2: Learning Robust Visual Features without Supervision*](https://arxiv.org/abs/2304.07193).
+- Zhu et al., [*Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks* (CycleGAN)](https://arxiv.org/abs/1703.10593).
+
+Review the applicable dataset and upstream-code licenses separately before redistributing material or adapting source code.
