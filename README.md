@@ -14,6 +14,16 @@ The proposed comparison uses a supervised convolutional neural network (CNN) as 
 
 **Implementation status.** The shared repository currently contains documentation and a minimal Google Colab starter notebook. It does not yet contain a trained fire detector, validated end-to-end dataset pipeline, or team benchmark results. Proposed architectures and experiments below are plans, not completed work.
 
+## Team quick start — November 2026
+
+**Immediate goal:** Everyone can access the original FLAME archives, inspect real fire/no-fire examples, and bring a small experiment or observation to the next meeting.
+
+- [ ] **Wed Nov 11, about 7 PM — email checkpoint:** Accept the GitHub invitation, access the shared Google Drive folder named **Vision AI Project**, and run the [Colab starter notebook](notebooks/starter.ipynb). Email the team: working / blocked / needs help.
+- [ ] **Mon Nov 16 — team meeting:** Share archive counts, example images, image/mask pairing results, and (if feasible) a simple computer vision method. A trained model is **not** required yet.
+- [ ] **Every contribution:** Use a separate Git branch, submit a pull request, and ask another teammate to review. **Email** for updates; **Teams** for calls. No raw images, video, checkpoints, or personal Drive listings in GitHub.
+
+Suggested rotating workstreams (assign by agreement): **data access and QA**, **CNN classification baseline**, and **CLIP comparison / metrics**. VAE, segmentation, and smoke labeling are optional extensions. See the week-by-week roadmap below.
+
 ## Repository organization and collaboration
 
 The shared repository is intentionally small while the team agrees on methods and responsibilities.
@@ -29,17 +39,17 @@ aerial-fire-vision/
 | Component | Purpose |
 |---|---|
 | **GitHub** | Canonical notebooks, source code, documentation, and small reproducible configurations |
-| **Google Drive** | Planned shared storage for dataset archives, model checkpoints, and larger outputs |
+| **Google Drive** | Shared ZIP archives and larger outputs; each teammate must verify access |
 | **Google Colab** | Primary notebook execution environment; GPU use when available |
 
-`README.md` is the project reference, and `.gitignore` protects against accidentally adding common local data, environment files, model weights, and generated artifacts. [`notebooks/starter.ipynb`](notebooks/starter.ipynb) currently **only** mounts Drive, configures a path, and checks for a directory. That check does not verify dataset completeness.
+The README documents the project; the notebook now inventories all four original FLAME ZIP archives and previews classification and segmentation samples. It is a **lightweight sample audit**, not an exhaustive data-integrity check.
 
 ### Getting started
 
-1. Clone the repository, or open [Google Colab](https://colab.research.google.com/) and select **File → Open notebook → GitHub**. Use `https://github.com/DavidBraun777/aerial-fire-vision` and open [`notebooks/starter.ipynb`](notebooks/starter.ipynb).
-2. Obtain access to the team's data folder. **Shared Google Drive access is not yet confirmed.** Once it is shared, add a shortcut named `aerial-fire-vision` to **My Drive**, or use the path appropriate for your account.
-3. Mount your own Drive in Colab and inspect the editable setting: `DATA_DIR = Path("/content/drive/MyDrive/aerial-fire-vision")`. Confirm the required files exist; the starter's folder check alone is insufficient.
-4. Work in a separate Git branch, keep notebooks reviewable, and propose changes through a pull request. Avoid simultaneous editing of one notebook and remove bulky cell outputs before committing.
+1. Accept the GitHub collaborator invitation. You can open the [starter notebook in Colab](https://colab.research.google.com/github/DavidBraun777/aerial-fire-vision/blob/master/notebooks/starter.ipynb) **without cloning** the repository.
+2. In Google Drive's **Shared with me**, find **Vision AI Project** and add a shortcut to the root of **My Drive**. Another location is fine if you change the path in the notebook.
+3. Mount Drive and run the notebook cells. The default DATA_DIR is **/content/drive/MyDrive/Vision AI Project**. It counts **Training.zip, Test.zip, Images.zip, Masks.zip**, previews examples, and pairs **Images** with **Masks** by filename.
+4. For code changes, create a branch and a pull request. Remove bulky notebook outputs before committing.
 
 GitHub is the source of truth for notebooks and code; saving a copy to Drive does **not** update GitHub. Do not commit raw data, videos, model weights, secrets, or credentials. `.gitignore` cannot protect information embedded inside notebook cells or outputs.
 
@@ -71,7 +81,7 @@ These figures describe **video-derived frames, not independent fires or separate
 
 The dataset's original ZIP archives are `Training.zip`, `Test.zip`, `Images.zip`, and `Masks.zip`. Six source recordings are also available, including Zenmuse, Phantom, and rendered thermal videos.
 
-A team member has downloaded the complete collection locally **outside this GitHub repository**. Preliminary local inspection has verified the counts and 254 × 254 RGB format of the test frames and inspected the 2,003 segmentation masks. **Team-wide Drive sharing, a complete full-dataset audit, and RGB-image-to-mask alignment are still pending.** Nothing in this repository implies that the files can already be accessed by every teammate.
+One teammate has downloaded the dataset locally and demonstrated access to **Vision AI Project** in Colab. Preliminary inspection confirmed the Training and Masks archive sizes/counts and sample image modes. **Each teammate's shared access, all four archive checks, complete integrity tests, and image/mask alignment still need independent confirmation.**
 
 The downloaded masks are **3840 × 2160**, with `0` representing background and `1` representing fire. The original paper's Table 2 instead lists **3480 × 2160** for segmentation. This discrepancy must be reported rather than silently corrected; confirm the paired RGB dimensions before training or measuring IoU. Do not divide already-binary `0`/`1` masks by 255. Use nearest-neighbor interpolation for label masks.
 
@@ -190,11 +200,28 @@ For each run, retain at least the Git revision, dataset/archive identity, split 
 
 ## Project plan
 
+### Week-by-week roadmap (Nov 9–Dec 19, 2026)
+
+| Week | Dates | Main work | What to show at checkpoint |
+|---|---|---|---|
+| **1** | Nov 9–15 | Drive/GitHub access, run starter audit, review a few examples | **Nov 11 ~7 PM email:** access status and blockers; have initial observations ready for **Nov 16** |
+| **2** | Nov 16–22 | Agree on labels, leakage-aware validation split, and small CNN baseline | Reproducible split manifest; one end-to-end CNN experiment |
+| **3** | Nov 23–29 | Train/refine CNN and run zero-shot CLIP | Validation precision, recall, F1, confusion matrix, and example errors |
+| **4** | Nov 30–Dec 6 | Compare CNN/CLIP under fair rules; add targeted few-shot run if time | Shared figures, settings, error analysis; freeze choices before final test |
+| **5** | Dec 7–13 | Rehearse and present; start polished report | **Presentation Dec 8 (tentative)**; results slides, limitations, team feedback |
+| **6** | Dec 14–19 | Finalize report, citations, notebooks, and reproducibility | **Internal freeze Dec 15**; **final submission Dec 19 (tentative)** |
+
+**Course dates are provisional until confirmed in Canvas.** Wednesday Nov 11 is an **email-only checkpoint**, not a required video call. Hold the Monday team review as agreed.
+
+**Minimum viable deliverable:** a reproducible Fire/No_Fire CNN reference and CLIP comparison evaluated on the **same** protocol, with per-class metrics and failure examples. Avoid random frame-level leakage; do not tune on the Phantom test set. A VAE, segmentation, or smoke-specific task should proceed only if these basics are complete.
+
+**Team responsibilities:** choose one owner and one reviewer for each of (1) dataset/QA, (2) CNN, (3) CLIP/evaluation. Share lightweight notebooks and results through GitHub PRs and email. No names or workstream assignments are presumed.
+
 The phases below reflect the **shared repository and verified project context**, not work implicitly completed by a notebook merely because it exists.
 
 | Phase | Current status | Next deliverable |
 |---|---|---|
-| Data acquisition | Downloaded locally; team access pending | Confirm shared Drive access and archive checksums |
+| Data acquisition | Downloaded locally; one member's Drive access confirmed | Confirm each member's access and archive checksums |
 | Dataset inspection | Partial local verification | Complete manifest, integrity audit, image/mask pairing and leakage checks |
 | Experimental design | Proposed | Agree on class mapping, validation split, label budgets and metric definitions |
 | Baseline models | Not yet in shared repo | Reproducible reference and zero-shot predictions |
@@ -202,7 +229,7 @@ The phases below reflect the **shared repository and verified project context**,
 | Optional extensions | Undecided | Select only methods justified by time, results, and available data |
 | Reporting | Planned | Reproducible figures, limitations, presentation and final report |
 
-**Course milestones (tentative; confirm in Canvas):** project plan **October 27, 2026**; group presentation **December 8, 2026**; final project submission **December 19, 2026**.
+**Course milestones (tentative; confirm in Canvas):** project plan **October 27, 2026** (historical); group presentation **December 8, 2026**; final project submission **December 19, 2026**. **Dec 15 is an internal target**, not an official due date.
 
 ### Open decisions
 
